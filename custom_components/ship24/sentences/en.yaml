@@ -1,0 +1,12 @@
+language: "en"
+intents:
+  Ship24RemovePackage:
+    data:
+      - sentences:
+          - "(remove|delete) [the] package {tracking_number}"
+          - "(remove|delete) tracking [number] {tracking_number}"
+          - "stop tracking {tracking_number}"
+          - "(remove|delete) {tracking_number} [from tracking]"
+lists:
+  tracking_number:
+    wildcard: true

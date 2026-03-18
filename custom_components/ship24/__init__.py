@@ -22,6 +22,7 @@ from .const import (
     SERVICE_REMOVE_PACKAGE,
 )
 from .coordinator import Ship24Coordinator
+from .intent import async_setup_intents
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -73,6 +74,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     _register_services(hass, entry)
+    await async_setup_intents(hass)
 
     return True
 

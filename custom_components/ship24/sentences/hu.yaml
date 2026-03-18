@@ -1,0 +1,13 @@
+language: "hu"
+intents:
+  Ship24RemovePackage:
+    data:
+      - sentences:
+          - "töröld [a] [az] {tracking_number} csomagot"
+          - "töröld {tracking_number} csomagot"
+          - "távolítsd el [a] [az] {tracking_number} csomagot"
+          - "ne kövesse [a] [az] {tracking_number} csomagot"
+          - "(töröld|távolítsd el) {tracking_number}"
+lists:
+  tracking_number:
+    wildcard: true
