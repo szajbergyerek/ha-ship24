@@ -49,10 +49,16 @@ class Ship24Coordinator(DataUpdateCoordinator[dict[str, Any]]):
         """
         Fetch updated tracking data from the Ship24 API.
 
+        Merges tracking numbers from the Ship24 account with any manually
+        configured numbers, so packages added on the Ship24 website are
+        automatically included.
+
         :return: Dict keyed by tracking number with parsed package data.
         """
         try:
-            raw_trackings = await self.api.get_tracking_results(self.tracking_numbers)
+            account_numbers = await self.api.get_all_tracker_numbers()
+            all_numbers = list(set(self.tracking_numbers + account_numbers))
+            raw_trackings = await self.api.get_tracking_results(all_numbers)
         except Ship24ApiError as err:
             raise UpdateFailed(f"Error communicating with Ship24 API: {err}") from err
 
