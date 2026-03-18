@@ -18,32 +18,7 @@
       "already_configured": "Ship24 Package Tracker is already configured."
     }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Manage Tracked Packages",
-        "description": "Enter one package per line. Optionally add a friendly name after a colon; voice assistants will use this name instead of the tracking number.\n\nExample:\n{example}",
-        "data": {
-          "tracking_numbers": "Packages (one per line, format: TRACKINGNUMBER or TRACKINGNUMBER:Friendly Name)"
-        }
-      }
-    }
-  },
   "services": {
-    "add_package": {
-      "name": "Add Package",
-      "description": "Add a new package tracking number to monitor.",
-      "fields": {
-        "tracking_number": {
-          "name": "Tracking Number",
-          "description": "The package tracking number to add."
-        },
-        "friendly_name": {
-          "name": "Friendly Name",
-          "description": "Optional name for voice assistants (e.g. 'Amazon Order')."
-        }
-      }
-    },
     "remove_package": {
       "name": "Remove Package",
       "description": "Remove a package tracking number from monitoring.",

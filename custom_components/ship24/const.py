@@ -5,6 +5,7 @@ DOMAIN = "ship24"
 CONF_API_KEY = "api_key"
 CONF_TRACKING_NUMBERS = "tracking_numbers"
 CONF_PACKAGE_ALIASES = "package_aliases"
+CONF_SUPPRESSED_NUMBERS = "suppressed_numbers"
 
 DEFAULT_SCAN_INTERVAL = 3600  # seconds (1 hour)
 
@@ -37,5 +38,4 @@ ATTR_EVENTS = "events"
 ATTR_SPOKEN_SUMMARY = "spoken_summary"
 ATTR_PACKAGE_COUNT = "package_count"
 
-SERVICE_ADD_PACKAGE = "add_package"
 SERVICE_REMOVE_PACKAGE = "remove_package"
