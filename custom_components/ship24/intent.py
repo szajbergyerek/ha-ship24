@@ -19,11 +19,16 @@ async def async_setup_intents(hass: HomeAssistant) -> None:
     """
     Register Ship24 intent handlers with Home Assistant.
 
+    Only registers once per HA instance to avoid overwrite warnings on reload.
+
     param hass: The Home Assistant instance.
 
     :return: None
     """
+    if hass.data.get(DOMAIN, {}).get("_intents_registered"):
+        return
     intent.async_register(hass, RemovePackageIntentHandler())
+    hass.data.setdefault(DOMAIN, {})["_intents_registered"] = True
     _LOGGER.debug("Ship24 intent handlers registered")
 
 

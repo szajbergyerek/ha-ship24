@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 import voluptuous as vol
 
@@ -30,7 +29,7 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 REMOVE_PACKAGE_SCHEMA = vol.Schema(
     {
-        vol.Required("tracking_number"): cv.string,
+        vol.Optional("tracking_number"): cv.string,
     }
 )
 
@@ -71,8 +70,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
-
     _register_services(hass, entry)
     await async_setup_intents(hass)
 
@@ -94,18 +91,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """
-    Reload the config entry when options are updated.
-
-    param hass: The Home Assistant instance.
-    param entry: The config entry that was updated.
-
-    :return: None
-    """
-    await hass.config_entries.async_reload(entry.entry_id)
-
-
 def _register_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """
     Register Ship24 services for removing tracked packages.
@@ -124,30 +109,64 @@ def _register_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
         """
         Handle the ship24.remove_package service call.
 
-        Adds the tracking number to the suppressed list so it is excluded
-        from future syncs, then reloads the integration.
+        If tracking_number is provided, suppresses that single package.
+        If omitted, suppresses all currently delivered packages.
 
-        param call: The service call data containing 'tracking_number'.
+        Updates the coordinator in memory immediately and persists the suppressed
+        list to config entry options — no integration reload is needed.
+
+        param call: The service call data, optionally containing 'tracking_number'.
 
         :return: None
         """
-        tracking_number: str = call.data["tracking_number"].strip().upper()
+        coordinator: Ship24Coordinator | None = hass.data.get(DOMAIN, {}).get(
+            entry.entry_id
+        )
+
+        raw_tn: str = call.data.get("tracking_number", "").strip().upper()
+
+        if raw_tn:
+            to_suppress = [raw_tn]
+        else:
+            if not coordinator or not coordinator.data:
+                _LOGGER.warning("No coordinator data available to find delivered packages")
+                return
+            to_suppress = [
+                tn
+                for tn, pkg in coordinator.data.items()
+                if pkg.get("status_code") == "delivered"
+            ]
+            if not to_suppress:
+                _LOGGER.info("No delivered packages found to suppress")
+                return
 
         suppressed: list[str] = list(entry.options.get(CONF_SUPPRESSED_NUMBERS, []))
+        added = [tn for tn in to_suppress if tn not in suppressed]
 
-        if tracking_number not in suppressed:
-            suppressed.append(tracking_number)
-            hass.config_entries.async_update_entry(
-                entry,
-                options={
-                    **entry.options,
-                    CONF_SUPPRESSED_NUMBERS: suppressed,
-                },
-            )
-            await hass.config_entries.async_reload(entry.entry_id)
-            _LOGGER.info("Suppressed tracking number: %s", tracking_number)
-        else:
-            _LOGGER.warning("Tracking number already suppressed: %s", tracking_number)
+        if not added:
+            _LOGGER.info("All requested package(s) already suppressed")
+            return
+
+        suppressed.extend(added)
+
+        # Update coordinator in memory immediately so sensors reflect the change
+        if coordinator:
+            coordinator.suppressed_numbers.update(added)
+            if coordinator.data:
+                new_data = {
+                    tn: pkg
+                    for tn, pkg in coordinator.data.items()
+                    if tn not in coordinator.suppressed_numbers
+                }
+                coordinator.async_set_updated_data(new_data)
+
+        # Persist suppressed list to config entry options (no reload needed)
+        hass.config_entries.async_update_entry(
+            entry,
+            options={**entry.options, CONF_SUPPRESSED_NUMBERS: suppressed},
+        )
+
+        _LOGGER.info("Suppressed %d package(s): %s", len(added), added)
 
     hass.services.async_register(
         DOMAIN,

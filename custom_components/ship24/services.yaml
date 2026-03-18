@@ -1,11 +1,13 @@
 remove_package:
   name: Remove Package
-  description: Remove a package from monitoring. The tracking number will be suppressed from future syncs.
+  description: >
+    Remove a package from monitoring. If tracking_number is provided, that specific
+    package is suppressed. If omitted, all delivered packages are suppressed.
   fields:
     tracking_number:
       name: Tracking Number
-      description: The package tracking number to remove.
-      required: true
+      description: The package tracking number to remove. Leave empty to remove all delivered packages.
+      required: false
       example: "1Z999AA10123456784"
       selector:
         text:
