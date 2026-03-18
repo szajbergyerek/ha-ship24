@@ -97,12 +97,19 @@ class Ship24Coordinator(DataUpdateCoordinator[dict[str, Any]]):
         for pkg in packages:
             name = pkg.get("friendly_name") or pkg["tracking_number"]
             status = pkg.get("status", "Unknown")
+            last_event = pkg.get("last_event", "")
             location = pkg.get("last_location", "")
+            last_event_time = pkg.get("last_event_time", "")
             eta = pkg.get("estimated_delivery", "")
 
             sentence = f"{name} is {status}"
+            if last_event:
+                sentence += f", last status: {last_event}"
             if location:
-                sentence += f", last seen in {location}"
+                sentence += f" in {location}"
+            if last_event_time:
+                event_date = last_event_time[:10] if len(last_event_time) >= 10 else last_event_time
+                sentence += f" on {event_date}"
             if eta and "delivered" not in status.lower():
                 eta_date = eta[:10] if len(eta) >= 10 else eta
                 sentence += f", estimated delivery {eta_date}"

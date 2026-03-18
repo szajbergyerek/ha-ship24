@@ -40,6 +40,10 @@ async def async_setup_entry(
     """
     Set up Ship24 sensor entities from a config entry.
 
+    Creates a summary sensor plus one sensor per tracked package. Dynamically
+    adds new package sensors as new tracking numbers appear after coordinator
+    updates (e.g. packages added on the Ship24 website).
+
     param hass: The Home Assistant instance.
     param entry: The config entry for this integration instance.
     param async_add_entities: Callback to register new sensor entities.
@@ -47,12 +51,22 @@ async def async_setup_entry(
     :return: None
     """
     coordinator: Ship24Coordinator = hass.data[DOMAIN][entry.entry_id]
+    known_tracking_numbers: set[str] = set()
 
-    entities: list[SensorEntity] = [Ship24SummarySensor(coordinator, entry)]
-    for tracking_number in coordinator.tracking_numbers:
-        entities.append(Ship24PackageSensor(coordinator, tracking_number))
+    async_add_entities([Ship24SummarySensor(coordinator, entry)])
 
-    async_add_entities(entities, update_before_add=True)
+    def _add_new_package_sensors() -> None:
+        """Add sensors for any tracking numbers not yet registered."""
+        current_numbers = set(coordinator.data or {})
+        new_numbers = current_numbers - known_tracking_numbers
+        if new_numbers:
+            known_tracking_numbers.update(new_numbers)
+            async_add_entities(
+                [Ship24PackageSensor(coordinator, tn) for tn in new_numbers]
+            )
+
+    _add_new_package_sensors()
+    entry.async_on_unload(coordinator.async_add_listener(_add_new_package_sensors))
 
 
 class Ship24SummarySensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
