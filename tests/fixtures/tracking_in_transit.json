@@ -1,0 +1,53 @@
+{
+  "tracker": {
+    "trackerId": "test-tracker-id-001",
+    "trackingNumber": "1Z999AA10123456784",
+    "isSubscribed": true,
+    "isTracked": true,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  "shipment": {
+    "shipmentId": "test-shipment-id-001",
+    "statusCode": "in_transit",
+    "statusCategory": "in_transit",
+    "statusMilestone": "in_transit",
+    "originCountryCode": "US",
+    "destinationCountryCode": "DE",
+    "delivery": {
+      "estimatedDeliveryDate": "2024-03-16T00:00:00.000Z",
+      "courierEstimatedDeliveryDate": null,
+      "service": "UPS Ground",
+      "signedBy": null
+    }
+  },
+  "events": [
+    {
+      "eventId": "test-event-id-001",
+      "trackingNumber": "1Z999AA10123456784",
+      "eventTrackingNumber": "1Z999AA10123456784",
+      "status": "Departed facility",
+      "occurrenceDatetime": "2024-03-15T14:30:00.000Z",
+      "order": 1,
+      "location": "Frankfurt, DE",
+      "sourceCode": "ups",
+      "courierCode": "ups",
+      "statusCode": "in_transit",
+      "statusCategory": "in_transit",
+      "statusMilestone": "in_transit"
+    },
+    {
+      "eventId": "test-event-id-002",
+      "trackingNumber": "1Z999AA10123456784",
+      "eventTrackingNumber": "1Z999AA10123456784",
+      "status": "Package picked up",
+      "occurrenceDatetime": "2024-03-14T09:00:00.000Z",
+      "order": 2,
+      "location": "New York, US",
+      "sourceCode": "ups",
+      "courierCode": "ups",
+      "statusCode": "in_transit",
+      "statusCategory": "in_transit",
+      "statusMilestone": "in_transit"
+    }
+  ]
+}

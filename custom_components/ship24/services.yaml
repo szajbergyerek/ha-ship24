@@ -1,0 +1,29 @@
+add_package:
+  name: Add Package
+  description: Add a new package tracking number to monitor.
+  fields:
+    tracking_number:
+      name: Tracking Number
+      description: The package tracking number to add.
+      required: true
+      example: "1Z999AA10123456784"
+      selector:
+        text:
+    friendly_name:
+      name: Friendly Name
+      description: Optional display name for voice assistants (e.g. 'Amazon Order').
+      example: "Amazon Order"
+      selector:
+        text:
+
+remove_package:
+  name: Remove Package
+  description: Remove a package tracking number from monitoring.
+  fields:
+    tracking_number:
+      name: Tracking Number
+      description: The package tracking number to remove.
+      required: true
+      example: "1Z999AA10123456784"
+      selector:
+        text:

@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Ship24 Csomagkövetés",
-        "description": "Add meg a Ship24 API kulcsodat. Megtalálod a https://app.ship24.com/settings/api oldalon.",
+        "description": "Add meg a Ship24 API kulcsodat. Megtalálod a [dashboard.ship24.com]({api_key_url}) oldalon.",
         "data": {
           "api_key": "API kulcs"
         }
@@ -22,7 +22,7 @@
     "step": {
       "init": {
         "title": "Csomagok kezelése",
-        "description": "Adj meg egy csomagot soronként. A kettőspont után megadhatod a csomag nevét — a hangalapú asszisztens ezt a nevet mondja majd.\n\nPélda:\n{example}",
+        "description": "Adj meg egy csomagot soronként. A kettőspont után megadhatod a csomag nevét; a hangalapú asszisztens ezt a nevet mondja majd.\n\nPélda:\n{example}",
         "data": {
           "tracking_numbers": "Csomagok (KÖVETÉSI_SZÁM vagy KÖVETÉSI_SZÁM:Csomag neve)"
         }

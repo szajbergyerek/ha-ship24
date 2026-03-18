@@ -1,60 +1,82 @@
-# Ship24 Package Tracker — Home Assistant Integration
+# Ship24 Package Tracker for Home Assistant
 
 Track your packages directly in Home Assistant using the [Ship24](https://ship24.com) API.
+No polling limits, no subscriptions. Just add your tracking numbers and go.
+
+[![GitHub Release](https://img.shields.io/github/v/release/szajbergyerek/ha-ship24?style=flat-square)](https://github.com/szajbergyerek/ha-ship24/releases)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg?style=flat-square)](https://github.com/hacs/integration)
+[![CI](https://img.shields.io/github/actions/workflow/status/szajbergyerek/ha-ship24/ci.yaml?label=CI&style=flat-square)](https://github.com/szajbergyerek/ha-ship24/actions/workflows/ci.yaml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
 ---
 
 ## Features
 
-- Track unlimited packages via Ship24's universal tracking API
-- Each package becomes a **sensor entity** with:
-  - State: current delivery status (e.g. *In Transit*, *Delivered*)
-  - Attributes: tracking number, courier, last event, last location, ETA, full event history
-- **Voice assistant ready** — ask Assist / Google / Alexa about all your packages at once
-- **`sensor.ship24_package_summary`** — a single sensor whose state is a spoken summary of all packages
-- **Dashboard cards** — use Entities, Glance, or Mushroom cards
-- **Services** to add/remove packages from automations
-- Polling interval: 1 hour
+- Track unlimited packages via Ship24's universal tracking API (supports 1,400+ carriers)
+- Each package becomes its own **sensor entity** with human-readable status
+- **`sensor.ship24_package_summary`**: a single sensor whose state is a complete spoken summary of all packages, ready for voice assistants
+- Sensor attributes: tracking number, courier, last event, last location, ETA, full event history (last 10 events)
+- **Voice assistant ready**: ask Assist, Google Home, or Alexa about your packages without saying a tracking number
+- **Dashboard cards**: works with Entities, Glance, Mushroom, and any custom card
+- **Services** to add and remove packages dynamically from automations
+- **Friendly names**: name your packages (e.g. "Amazon Order") for display and voice
+- Polling interval: 1 hour (Ship24 creates a tracker subscription on first query, idempotent)
 
 ---
 
-## Installation
+## Free Tier
 
-1. Download or clone this repository
-2. Copy the `custom_components/ship24/` folder into your Home Assistant config directory:
-   ```
-   <ha-config>/custom_components/ship24/
-   ```
-3. Restart Home Assistant
-4. Go to **Settings → Devices & Services → Add Integration**
-5. Search for **Ship24** and follow the setup wizard
+The Ship24 free tier API is more than enough for personal use. It covers 1,400+ carriers worldwide, including all major postal services, couriers, and e-commerce platforms. You do not need a paid plan to track your everyday packages at home.
+
+Get your API key at [dashboard.ship24.com/integrations/api-keys](https://dashboard.ship24.com/integrations/api-keys).
+
+---
+
+## Installation via HACS
+
+1. Open HACS in Home Assistant
+2. Go to **Integrations**, click the three-dot menu in the top right corner
+3. Select **Custom repositories**
+4. Add URL: `https://github.com/szajbergyerek/ha-ship24`, set Category to **Integration**
+5. Search for **Ship24** and click **Download**
+6. Restart Home Assistant
 
 ---
 
 ## Setup
 
-The setup wizard only asks for one thing: your **Ship24 API key**.
+1. Go to **Settings → Devices & Services → Add Integration**
+2. Search for **Ship24**
+3. Enter your **Ship24 API key**; the setup wizard validates it automatically
 
-Get your key at [app.ship24.com/settings/api](https://app.ship24.com/settings/api).
+A free tier is available at [ship24.com/pricing](https://ship24.com/pricing).
 
 ---
 
 ## Adding Packages
 
-### Via the UI (recommended)
+### Via the Ship24 website (recommended)
 
-1. **Settings → Devices & Services → Ship24 → Configure**
-2. Enter one package per line, with an optional friendly name:
-   ```
-   1Z999AA10123456784:Amazon Order
-   RR123456789CN:AliExpress Shoes
-   JD014600000000
-   ```
-3. Click **Submit** — HA reloads and creates sensor entities
+The easiest way to manage your packages is through the [Ship24 website](https://ship24.com). You can add tracking numbers, set custom names, and monitor statuses there directly. The integration will automatically pick up any trackers associated with your API key on the next poll.
 
-The friendly name is shown in the UI and used by voice assistants instead of the tracking number.
+### Via the UI
+
+**Settings → Devices & Services → Ship24 → Configure**
+
+Enter one package per line. Optionally add a friendly name after a colon:
+
+```
+1Z999AA10123456784:Amazon Order
+RR123456789CN:AliExpress Shoes
+JD014600000000
+```
+
+Click **Submit**. Home Assistant reloads and creates sensor entities for each package.
+The friendly name appears in the UI and is used by voice assistants instead of the long tracking number.
 
 ### Via Service Call
+
+Add a package from an automation or Developer Tools:
 
 ```yaml
 service: ship24.add_package
@@ -62,6 +84,8 @@ data:
   tracking_number: "1Z999AA10123456784"
   friendly_name: "Amazon Order"   # optional
 ```
+
+Remove a package:
 
 ```yaml
 service: ship24.remove_package
@@ -73,15 +97,9 @@ data:
 
 ## Voice Assistant
 
-Every package is tracked by a sensor (e.g. `sensor.amazon_order` if you set a friendly name).
+### HA Assist (built-in)
 
-There is also a **summary sensor** — `sensor.ship24_package_summary` — whose state is a complete spoken description of all packages:
-
-> *"You have 3 packages. Amazon Order is In Transit, last seen in Frankfurt. AliExpress Shoes is Delivered. Package JD014... is Pending."*
-
-### Asking with HA Assist
-
-Add this to your `configuration.yaml` to respond to "where are my packages?":
+Add this to your `configuration.yaml` and restart HA:
 
 ```yaml
 intent_script:
@@ -98,28 +116,32 @@ conversation:
       - "track my packages"
 ```
 
-### TTS Automation Example
+Example response:
+> *"You have 3 packages. Amazon Order is In Transit, last seen in Frankfurt, estimated delivery 2024-03-16. AliExpress Shoes is Delivered. Package JD014... is Pending."*
+
+### TTS Morning Briefing
 
 ```yaml
 automation:
-  - alias: "Announce package status"
+  - alias: "Morning package briefing"
     trigger:
       - platform: time
-        at: "09:00:00"
+        at: "08:00:00"
     condition:
       - condition: template
-        value_template: "{{ states('sensor.ship24_package_summary') != 'You have no tracked packages.' }}"
+        value_template: >
+          {{ states('sensor.ship24_package_summary') != 'You have no tracked packages.' }}
     action:
       - service: tts.speak
         data:
           message: "{{ states('sensor.ship24_package_summary') }}"
 ```
 
-### Notify on Delivery
+### Delivery Notification
 
 ```yaml
 automation:
-  - alias: "Notify when package delivered"
+  - alias: "Notify on delivery"
     trigger:
       - platform: state
         entity_id: sensor.amazon_order
@@ -127,7 +149,55 @@ automation:
     action:
       - service: notify.mobile_app
         data:
-          message: "{{ state_attr('sensor.amazon_order', 'friendly_name') or 'Your package' }} has been delivered!"
+          message: >
+            {{ state_attr('sensor.amazon_order', 'friendly_name') or 'Your package' }}
+            has been delivered!
+```
+
+---
+
+## Dashboard
+
+### Glance Card
+
+```yaml
+type: glance
+title: Packages
+entities:
+  - entity: sensor.amazon_order
+    name: Amazon
+  - entity: sensor.aliexpress_shoes
+    name: AliExpress
+```
+
+### Entities Card with Summary
+
+```yaml
+type: entities
+title: Package Tracker
+entities:
+  - sensor.ship24_package_summary
+  - sensor.amazon_order
+  - sensor.aliexpress_shoes
+```
+
+### Mushroom Template Card (HACS)
+
+```yaml
+type: custom:mushroom-template-card
+primary: "{{ state_attr('sensor.amazon_order', 'friendly_name') }}"
+secondary: "{{ states('sensor.amazon_order') }}"
+icon: >
+  {% set s = state_attr('sensor.amazon_order', 'status_code') %}
+  {% if s == 'delivered' %} mdi:package-variant-closed-check
+  {% elif s == 'in_transit' %} mdi:truck-fast
+  {% elif s == 'out_for_delivery' %} mdi:truck-delivery
+  {% else %} mdi:package-variant-closed {% endif %}
+icon_color: >
+  {% if is_state('sensor.amazon_order', 'Delivered') %} green
+  {% elif is_state('sensor.amazon_order', 'In Transit') %} blue
+  {% elif is_state('sensor.amazon_order', 'Exception') %} red
+  {% else %} grey {% endif %}
 ```
 
 ---
@@ -136,19 +206,22 @@ automation:
 
 ### `sensor.ship24_package_summary`
 
-| Field | Example |
-|-------|---------|
+| Attribute | Example |
+|-----------|---------|
 | **State** | `You have 2 packages. Amazon Order is In Transit...` |
-| `spoken_summary` | Full text (no 255-char limit) |
+| `spoken_summary` | Full summary text (no 255-char limit) |
 | `package_count` | `2` |
 
-### `sensor.ship24_<tracking_number>` (per package)
+### Per-package sensor
 
-| Field | Example |
-|-------|---------|
+Each tracked package creates a sensor whose device name equals the friendly name (or tracking number).
+
+| Attribute | Example |
+|-----------|---------|
 | **State** | `In Transit` |
 | `tracking_number` | `1Z999AA10123456784` |
 | `friendly_name` | `Amazon Order` |
+| `status_code` | `in_transit` |
 | `courier` | `ups` |
 | `last_event` | `Departed facility` |
 | `last_event_time` | `2024-03-15T14:30:00.000Z` |
@@ -156,11 +229,9 @@ automation:
 | `estimated_delivery` | `2024-03-16T00:00:00.000Z` |
 | `origin_country` | `US` |
 | `destination_country` | `DE` |
-| `events` | list of last 10 events |
+| `events` | List of last 10 events |
 
----
-
-## Supported Status Values
+### Status Values
 
 | Status Code | Display |
 |-------------|---------|
@@ -180,3 +251,10 @@ automation:
 
 - Home Assistant 2023.1.0+
 - Ship24 API key ([free tier available](https://ship24.com/pricing))
+
+---
+
+## Contributing
+
+Pull requests are welcome!
+Please open an issue first to discuss significant changes.

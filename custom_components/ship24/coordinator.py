@@ -72,7 +72,7 @@ class Ship24Coordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         :return: A spoken-language summary string of all package statuses.
         """
-        if not self.data:
+        if self.data is None:
             return "No package data available yet."
 
         packages = list(self.data.values())
@@ -162,7 +162,7 @@ def _parse_tracking(
         "last_event": last_event.get("status", ""),
         "last_event_time": last_event.get("occurrenceDatetime", ""),
         "last_location": last_event.get("location", ""),
-        "estimated_delivery": delivery.get("estimatedDeliveryDate", ""),
+        "estimated_delivery": delivery.get("estimatedDeliveryDate") or "",
         "origin_country": shipment.get("originCountryCode", ""),
         "destination_country": shipment.get("destinationCountryCode", ""),
         "events": event_list,

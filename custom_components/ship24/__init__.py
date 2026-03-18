@@ -113,7 +113,7 @@ def _register_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """
     Register Ship24 services for adding and removing tracked packages.
 
-    Services are only registered once (idempotent).
+    Services are only registered once per HA instance (idempotent check).
 
     param hass: The Home Assistant instance.
     param entry: The config entry used to persist tracking numbers.
@@ -148,8 +148,6 @@ def _register_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
         if friendly_name:
             current_aliases[tracking_number] = friendly_name
-        elif tracking_number in current_aliases and not friendly_name:
-            pass  # Keep existing alias if no new one provided
 
         hass.config_entries.async_update_entry(
             entry,
@@ -160,7 +158,11 @@ def _register_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
             },
         )
         await hass.config_entries.async_reload(entry.entry_id)
-        _LOGGER.info("Added tracking number: %s (name: %s)", tracking_number, friendly_name or "—")
+        _LOGGER.info(
+            "Added tracking number: %s (name: %s)",
+            tracking_number,
+            friendly_name or "-",
+        )
 
     async def handle_remove_package(call: ServiceCall) -> None:
         """

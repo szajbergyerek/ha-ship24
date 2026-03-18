@@ -1,0 +1,11 @@
+{
+  "tracker": {
+    "trackerId": "test-tracker-id-003",
+    "trackingNumber": "JD014600000000",
+    "isSubscribed": true,
+    "isTracked": false,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  "shipment": null,
+  "events": []
+}

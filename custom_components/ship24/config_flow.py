@@ -71,6 +71,9 @@ class Ship24ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=STEP_USER_SCHEMA,
             errors=errors,
+            description_placeholders={
+                "api_key_url": "https://dashboard.ship24.com/integrations/api-keys",
+            },
         )
 
     @staticmethod
@@ -85,19 +88,11 @@ class Ship24ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         :return: An initialized Ship24OptionsFlow instance.
         """
-        return Ship24OptionsFlow(config_entry)
+        return Ship24OptionsFlow()
 
 
 class Ship24OptionsFlow(config_entries.OptionsFlow):
     """Handle options (tracking numbers and friendly names) for an existing Ship24 entry."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """
-        Initialize the Ship24 options flow.
-
-        param config_entry: The config entry whose options are being modified.
-        """
-        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
