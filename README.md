@@ -5,8 +5,7 @@ No polling limits, no subscriptions. Just add your tracking numbers and go.
 
 [![GitHub Release](https://img.shields.io/github/v/release/szajbergyerek/ha-ship24?style=flat-square)](https://github.com/szajbergyerek/ha-ship24/releases)
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg?style=flat-square)](https://github.com/hacs/integration)
-[![Tests](https://img.shields.io/github/actions/workflow/status/szajbergyerek/ha-ship24/tests.yaml?label=tests&style=flat-square)](https://github.com/szajbergyerek/ha-ship24/actions/workflows/tests.yaml)
-[![hassfest](https://img.shields.io/github/actions/workflow/status/szajbergyerek/ha-ship24/hassfest.yaml?label=hassfest&style=flat-square)](https://github.com/szajbergyerek/ha-ship24/actions/workflows/hassfest.yaml)
+[![CI](https://img.shields.io/github/actions/workflow/status/szajbergyerek/ha-ship24/ci.yaml?label=CI&style=flat-square)](https://github.com/szajbergyerek/ha-ship24/actions/workflows/ci.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
 ---
