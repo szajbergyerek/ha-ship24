@@ -259,12 +259,3 @@ Each tracked package creates a sensor whose device name equals the friendly name
 
 Pull requests are welcome!
 Please open an issue first to discuss significant changes.
-
----
-
-## Links
-
-- **Repository:** [github.com/szajbergyerek/ha-ship24](https://github.com/szajbergyerek/ha-ship24)
-- **Issues:** [github.com/szajbergyerek/ha-ship24/issues](https://github.com/szajbergyerek/ha-ship24/issues)
-- **Ship24 API docs:** [docs.ship24.com](https://docs.ship24.com)
-- **HACS:** [hacs.xyz](https://hacs.xyz)

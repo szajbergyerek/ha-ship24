@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Ship24 Package Tracker",
-        "description": "Enter your Ship24 API key. You can find it at https://app.ship24.com/settings/api.",
+        "description": "Enter your Ship24 API key. You can find it at [dashboard.ship24.com]({api_key_url}).",
         "data": {
           "api_key": "API Key"
         }

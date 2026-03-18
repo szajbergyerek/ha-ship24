@@ -71,6 +71,9 @@ class Ship24ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=STEP_USER_SCHEMA,
             errors=errors,
+            description_placeholders={
+                "api_key_url": "https://dashboard.ship24.com/integrations/api-keys",
+            },
         )
 
     @staticmethod
