@@ -66,6 +66,54 @@ class Ship24Api:
         except aiohttp.ClientError as err:
             raise Ship24ApiError(f"Connection error during validation: {err}") from err
 
+    async def get_all_tracker_numbers(self) -> list[str]:
+        """
+        Fetch all tracking numbers registered in the Ship24 account.
+
+        Handles pagination automatically, fetching up to 100 trackers per page.
+
+        :return: List of tracking number strings from the account.
+        """
+        url = f"{API_BASE_URL}/trackers"
+        tracking_numbers: list[str] = []
+        page = 1
+
+        while True:
+            try:
+                async with self._session.get(
+                    url,
+                    headers=self._headers,
+                    params={"page": page, "limit": 100},
+                    timeout=aiohttp.ClientTimeout(total=API_TIMEOUT),
+                ) as response:
+                    if response.status == 403:
+                        raise Ship24AuthError("Invalid or unauthorized API key")
+                    if response.status != 200:
+                        _LOGGER.warning(
+                            "Ship24 GET /trackers returned status %d", response.status
+                        )
+                        break
+                    data = await response.json()
+                    trackers = data.get("data", {}).get("trackers", [])
+                    if not trackers:
+                        break
+                    for tracker in trackers:
+                        tn = tracker.get("trackingNumber")
+                        if tn:
+                            tracking_numbers.append(tn)
+                    total = data.get("data", {}).get("total", 0)
+                    if len(tracking_numbers) >= total:
+                        break
+                    page += 1
+            except Ship24AuthError:
+                raise
+            except aiohttp.ClientError as err:
+                _LOGGER.warning("Connection error fetching tracker list: %s", err)
+                break
+
+        _LOGGER.debug("Found %d tracker(s) in Ship24 account", len(tracking_numbers))
+        return tracking_numbers
+
     async def get_tracking_results(
         self, tracking_numbers: list[str]
     ) -> list[dict[str, Any]]:

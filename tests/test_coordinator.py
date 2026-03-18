@@ -229,6 +229,7 @@ def test_spoken_summary_multiple_packages():
 async def test_coordinator_async_update_data_parses_results():
     """Coordinator fetches data via API and returns correctly parsed tracking dicts."""
     api = AsyncMock()
+    api.get_all_tracker_numbers.return_value = []
     api.get_tracking_results.return_value = [load_fixture("tracking_in_transit.json")]
 
     coordinator = Ship24Coordinator(
@@ -249,6 +250,7 @@ async def test_coordinator_async_update_data_parses_results():
 async def test_coordinator_async_update_data_empty():
     """Coordinator returns empty dict when API returns no results."""
     api = AsyncMock()
+    api.get_all_tracker_numbers.return_value = []
     api.get_tracking_results.return_value = []
 
     coordinator = Ship24Coordinator(hass=MagicMock(), api=api, tracking_numbers=[])
@@ -259,6 +261,7 @@ async def test_coordinator_async_update_data_empty():
 async def test_coordinator_async_update_data_skips_missing_tracker():
     """Coordinator skips entries where the tracking number is absent in the response."""
     api = AsyncMock()
+    api.get_all_tracker_numbers.return_value = []
     api.get_tracking_results.return_value = [
         {"tracker": {}, "shipment": {}, "events": []}
     ]
