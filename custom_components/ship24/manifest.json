@@ -3,10 +3,10 @@
   "name": "Ship24 Package Tracker",
   "codeowners": ["@szajbergyerek"],
   "config_flow": true,
-  "dependencies": ["conversation"],
+  "dependencies": [],
   "documentation": "https://github.com/szajbergyerek/ha-ship24",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/szajbergyerek/ha-ship24/issues",
   "requirements": [],
-  "version": "1.0.9"
+  "version": "1.1.1"
 }
