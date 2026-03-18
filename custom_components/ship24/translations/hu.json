@@ -1,0 +1,58 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ship24 Csomagkövetés",
+        "description": "Add meg a Ship24 API kulcsodat. Megtalálod a https://app.ship24.com/settings/api oldalon.",
+        "data": {
+          "api_key": "API kulcs"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Érvénytelen API kulcs. Ellenőrizd a Ship24 API kulcsodat.",
+      "cannot_connect": "Nem sikerül kapcsolódni a Ship24 API-hoz. Ellenőrizd az internetkapcsolatot.",
+      "unknown": "Váratlan hiba történt."
+    },
+    "abort": {
+      "already_configured": "A Ship24 Csomagkövetés már be van állítva."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Csomagok kezelése",
+        "description": "Adj meg egy csomagot soronként. A kettőspont után megadhatod a csomag nevét — a hangalapú asszisztens ezt a nevet mondja majd.\n\nPélda:\n{example}",
+        "data": {
+          "tracking_numbers": "Csomagok (KÖVETÉSI_SZÁM vagy KÖVETÉSI_SZÁM:Csomag neve)"
+        }
+      }
+    }
+  },
+  "services": {
+    "add_package": {
+      "name": "Csomag hozzáadása",
+      "description": "Új csomag követési számának hozzáadása.",
+      "fields": {
+        "tracking_number": {
+          "name": "Követési szám",
+          "description": "A hozzáadandó csomag követési száma."
+        },
+        "friendly_name": {
+          "name": "Csomag neve",
+          "description": "Opcionális név hangalapú asszisztensekhez (pl. 'Amazon csomag')."
+        }
+      }
+    },
+    "remove_package": {
+      "name": "Csomag eltávolítása",
+      "description": "Csomag követési számának eltávolítása a figyelőlistáról.",
+      "fields": {
+        "tracking_number": {
+          "name": "Követési szám",
+          "description": "Az eltávolítandó csomag követési száma."
+        }
+      }
+    }
+  }
+}

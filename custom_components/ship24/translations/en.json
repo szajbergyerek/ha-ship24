@@ -1,0 +1,58 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ship24 Package Tracker",
+        "description": "Enter your Ship24 API key. You can find it at https://app.ship24.com/settings/api.",
+        "data": {
+          "api_key": "API Key"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid API key. Please check your Ship24 API key.",
+      "cannot_connect": "Cannot connect to the Ship24 API. Please check your internet connection.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "Ship24 Package Tracker is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Manage Tracked Packages",
+        "description": "Enter one package per line. Add a friendly name after a colon — voice assistants will use this name instead of the tracking number.\n\nExample:\n{example}",
+        "data": {
+          "tracking_numbers": "Packages (TRACKINGNUMBER or TRACKINGNUMBER:Friendly Name)"
+        }
+      }
+    }
+  },
+  "services": {
+    "add_package": {
+      "name": "Add Package",
+      "description": "Add a new package tracking number to monitor.",
+      "fields": {
+        "tracking_number": {
+          "name": "Tracking Number",
+          "description": "The package tracking number to add."
+        },
+        "friendly_name": {
+          "name": "Friendly Name",
+          "description": "Optional display name for voice assistants (e.g. 'Amazon Order')."
+        }
+      }
+    },
+    "remove_package": {
+      "name": "Remove Package",
+      "description": "Remove a package tracking number from monitoring.",
+      "fields": {
+        "tracking_number": {
+          "name": "Tracking Number",
+          "description": "The package tracking number to remove."
+        }
+      }
+    }
+  }
+}
