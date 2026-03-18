@@ -101,8 +101,7 @@ class Ship24Api:
                         tn = tracker.get("trackingNumber")
                         if tn:
                             tracking_numbers.append(tn)
-                    total = data.get("data", {}).get("total", 0)
-                    if len(tracking_numbers) >= total:
+                    if len(trackers) < 100:
                         break
                     page += 1
             except Ship24AuthError:
@@ -155,9 +154,10 @@ class Ship24Api:
                         )
                         continue
                     data = await response.json()
-                    tracking = data.get("data", {})
-                    if tracking:
-                        results.append(tracking)
+                    trackings = data.get("data", {}).get("trackings", [])
+                    for tracking in trackings:
+                        if tracking:
+                            results.append(tracking)
             except Ship24AuthError:
                 raise
             except aiohttp.ClientError as err:
