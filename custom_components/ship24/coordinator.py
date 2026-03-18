@@ -24,14 +24,16 @@ class Ship24Coordinator(DataUpdateCoordinator[dict[str, Any]]):
         api: Ship24Api,
         tracking_numbers: list[str],
         package_aliases: dict[str, str] | None = None,
+        suppressed_numbers: list[str] | None = None,
     ) -> None:
         """
         Initialize the Ship24 coordinator.
 
         param hass: The Home Assistant instance.
         param api: An initialized Ship24Api client.
-        param tracking_numbers: List of tracking numbers to monitor.
+        param tracking_numbers: List of manually configured tracking numbers.
         param package_aliases: Optional dict mapping tracking number to friendly name.
+        param suppressed_numbers: List of tracking numbers to exclude from results.
 
         :return: None
         """
@@ -44,6 +46,7 @@ class Ship24Coordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.api = api
         self.tracking_numbers: list[str] = list(tracking_numbers)
         self.package_aliases: dict[str, str] = package_aliases or {}
+        self.suppressed_numbers: set[str] = set(suppressed_numbers or [])
 
     async def _async_update_data(self) -> dict[str, Any]:
         """
@@ -57,7 +60,10 @@ class Ship24Coordinator(DataUpdateCoordinator[dict[str, Any]]):
         """
         try:
             account_numbers = await self.api.get_all_tracker_numbers()
-            all_numbers = list(set(self.tracking_numbers + account_numbers))
+            all_numbers = [
+                n for n in set(self.tracking_numbers + account_numbers)
+                if n not in self.suppressed_numbers
+            ]
             raw_trackings = await self.api.get_tracking_results(all_numbers)
         except Ship24ApiError as err:
             raise UpdateFailed(f"Error communicating with Ship24 API: {err}") from err

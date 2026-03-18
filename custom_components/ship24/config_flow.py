@@ -9,7 +9,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.const import CONF_API_KEY
-from homeassistant.core import callback
+
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import Ship24Api, Ship24AuthError, Ship24ApiError
@@ -73,99 +73,5 @@ class Ship24ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
             description_placeholders={
                 "api_key_url": "https://dashboard.ship24.com/integrations/api-keys",
-            },
-        )
-
-    @staticmethod
-    @callback
-    def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
-    ) -> "Ship24OptionsFlow":
-        """
-        Return the options flow handler for this config entry.
-
-        param config_entry: The existing config entry to configure options for.
-
-        :return: An initialized Ship24OptionsFlow instance.
-        """
-        return Ship24OptionsFlow()
-
-
-class Ship24OptionsFlow(config_entries.OptionsFlow):
-    """Handle options (tracking numbers and friendly names) for an existing Ship24 entry."""
-
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> config_entries.FlowResult:
-        """
-        Handle the options form: manage tracked packages with optional friendly names.
-
-        Format per line: TRACKINGNUMBER or TRACKINGNUMBER:Friendly Name
-        Empty lines are ignored. Duplicates are removed.
-
-        param user_input: Form data submitted by the user, or None on first load.
-
-        :return: FlowResult updating the options or showing the form.
-        """
-        errors: dict[str, str] = {}
-
-        current_numbers: list[str] = self.config_entry.options.get(
-            CONF_TRACKING_NUMBERS, []
-        )
-        current_aliases: dict[str, str] = self.config_entry.options.get(
-            CONF_PACKAGE_ALIASES, {}
-        )
-
-        # Reconstruct textarea lines from stored data
-        lines = []
-        for number in current_numbers:
-            alias = current_aliases.get(number, "")
-            lines.append(f"{number}:{alias}" if alias else number)
-        current_text = "\n".join(lines)
-
-        if user_input is not None:
-            raw_text: str = user_input.get(CONF_TRACKING_NUMBERS, "")
-            tracking_numbers: list[str] = []
-            package_aliases: dict[str, str] = {}
-
-            seen: set[str] = set()
-            for line in raw_text.splitlines():
-                line = line.strip()
-                if not line:
-                    continue
-                if ":" in line:
-                    number, _, alias = line.partition(":")
-                    number = number.strip().upper()
-                    alias = alias.strip()
-                else:
-                    number = line.upper()
-                    alias = ""
-
-                if number and number not in seen:
-                    seen.add(number)
-                    tracking_numbers.append(number)
-                    if alias:
-                        package_aliases[number] = alias
-
-            return self.async_create_entry(
-                title="",
-                data={
-                    CONF_TRACKING_NUMBERS: tracking_numbers,
-                    CONF_PACKAGE_ALIASES: package_aliases,
-                },
-            )
-
-        options_schema = vol.Schema(
-            {
-                vol.Optional(CONF_TRACKING_NUMBERS, default=current_text): str,
-            }
-        )
-
-        return self.async_show_form(
-            step_id="init",
-            data_schema=options_schema,
-            errors=errors,
-            description_placeholders={
-                "example": "1Z999AA10123456784:Amazon Order\nRR123456789CN:AliExpress\nJD014600000000",
             },
         )
