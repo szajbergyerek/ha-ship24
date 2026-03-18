@@ -55,7 +55,7 @@ A free tier is available at [ship24.com/pricing](https://ship24.com/pricing).
 
 ## Adding Packages
 
-### Via the Ship24 website (recommended)
+### Via the Ship24 website
 
 The easiest way to manage your packages is through the [Ship24 website](https://ship24.com). You can add tracking numbers, set custom names, and monitor statuses there directly. The integration will automatically pick up any trackers associated with your API key on the next poll.
 
