@@ -22,7 +22,7 @@
     "step": {
       "init": {
         "title": "Manage Tracked Packages",
-        "description": "Enter one package per line. Optionally add a friendly name after a colon — this name will be used by voice assistants.\n\nExample:\n{example}",
+        "description": "Enter one package per line. Optionally add a friendly name after a colon; voice assistants will use this name instead of the tracking number.\n\nExample:\n{example}",
         "data": {
           "tracking_numbers": "Packages (one per line, format: TRACKINGNUMBER or TRACKINGNUMBER:Friendly Name)"
         }

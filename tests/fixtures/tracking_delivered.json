@@ -1,0 +1,39 @@
+{
+  "tracker": {
+    "trackerId": "test-tracker-id-002",
+    "trackingNumber": "RR123456789CN",
+    "isSubscribed": true,
+    "isTracked": true,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  "shipment": {
+    "shipmentId": "test-shipment-id-002",
+    "statusCode": "delivered",
+    "statusCategory": "delivered",
+    "statusMilestone": "delivered",
+    "originCountryCode": "CN",
+    "destinationCountryCode": "HU",
+    "delivery": {
+      "estimatedDeliveryDate": null,
+      "courierEstimatedDeliveryDate": null,
+      "service": null,
+      "signedBy": "RECEIVED"
+    }
+  },
+  "events": [
+    {
+      "eventId": "test-event-id-003",
+      "trackingNumber": "RR123456789CN",
+      "eventTrackingNumber": "RR123456789CN",
+      "status": "Delivered",
+      "occurrenceDatetime": "2024-03-16T10:00:00.000Z",
+      "order": 1,
+      "location": "Budapest, HU",
+      "sourceCode": "cn_post",
+      "courierCode": "cn_post",
+      "statusCode": "delivered",
+      "statusCategory": "delivered",
+      "statusMilestone": "delivered"
+    }
+  ]
+}

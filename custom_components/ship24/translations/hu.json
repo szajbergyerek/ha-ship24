@@ -22,7 +22,7 @@
     "step": {
       "init": {
         "title": "Csomagok kezelése",
-        "description": "Adj meg egy csomagot soronként. A kettőspont után megadhatod a csomag nevét — a hangalapú asszisztens ezt a nevet mondja majd.\n\nPélda:\n{example}",
+        "description": "Adj meg egy csomagot soronként. A kettőspont után megadhatod a csomag nevét; a hangalapú asszisztens ezt a nevet mondja majd.\n\nPélda:\n{example}",
         "data": {
           "tracking_numbers": "Csomagok (KÖVETÉSI_SZÁM vagy KÖVETÉSI_SZÁM:Csomag neve)"
         }
