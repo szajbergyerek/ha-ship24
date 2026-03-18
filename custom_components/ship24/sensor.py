@@ -56,15 +56,10 @@ async def async_setup_entry(
 
 
 class Ship24SummarySensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
-    """
-    Sensor that provides a spoken summary of all tracked packages.
-
-    Designed for voice assistant queries - state is a complete human-readable
-    sentence describing all package statuses.
-    """
+    """Sensor providing a spoken summary of all tracked packages for voice assistants."""
 
     _attr_icon = "mdi:package-variant-closed-shipping"
-    _attr_has_entity_name = True
+    _attr_has_entity_name = False
 
     def __init__(
         self,
@@ -80,16 +75,16 @@ class Ship24SummarySensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
         super().__init__(coordinator)
         self._entry_id = entry.entry_id
         self._attr_unique_id = f"{DOMAIN}_{entry.entry_id}_summary"
-        self._attr_name = "Package Summary"
+        self._attr_name = "Ship24 Package Summary"
 
     @property
     def native_value(self) -> str:
         """
-        Return the spoken summary as the sensor state (max 255 chars).
+        Return the spoken summary as the sensor state (capped at 255 chars).
 
-        Voice assistants read this when asked about the sensor.
+        Voice assistants read this state when the sensor is queried.
 
-        :return: Truncated spoken summary string.
+        :return: Spoken summary string, truncated if needed.
         """
         summary = self.coordinator.get_spoken_summary()
         if len(summary) > 255:
@@ -111,7 +106,7 @@ class Ship24SummarySensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
     @property
     def device_info(self) -> dict[str, Any]:
         """
-        Return device info grouping this sensor under the Ship24 integration device.
+        Group the summary sensor under the main Ship24 integration device.
 
         :return: Dict with device identifiers and metadata.
         """
@@ -124,10 +119,16 @@ class Ship24SummarySensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
 
 
 class Ship24PackageSensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
-    """Sensor representing a single tracked package via Ship24."""
+    """
+    Sensor representing a single tracked package.
 
-    _attr_has_entity_name = True
+    Each package is its own HA device. With has_entity_name=True and name=None,
+    the entity name equals the device name (friendly name or tracking number),
+    showing a clean single label in the UI without duplication.
+    """
+
     _attr_icon = "mdi:package-variant-closed"
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -143,20 +144,7 @@ class Ship24PackageSensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
         super().__init__(coordinator)
         self._tracking_number = tracking_number
         self._attr_unique_id = f"{DOMAIN}_{tracking_number}"
-
-    @property
-    def name(self) -> str:
-        """
-        Return the sensor name, using friendly name if configured.
-
-        :return: Friendly name if set, otherwise the tracking number.
-        """
-        data = self._package_data
-        if data:
-            alias = data.get("friendly_name", "")
-            if alias:
-                return alias
-        return self._tracking_number
+        self._attr_name = None
 
     @property
     def _package_data(self) -> dict[str, Any] | None:
@@ -170,11 +158,25 @@ class Ship24PackageSensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
         return self.coordinator.data.get(self._tracking_number)
 
     @property
+    def _display_name(self) -> str:
+        """
+        Return the friendly name if configured, otherwise the tracking number.
+
+        :return: Human-readable identifier for this package.
+        """
+        data = self._package_data
+        if data:
+            alias = data.get("friendly_name", "")
+            if alias:
+                return alias
+        return self._tracking_number
+
+    @property
     def native_value(self) -> str | None:
         """
         Return the current delivery status as the sensor state.
 
-        :return: Human-readable status string, or None if unavailable.
+        :return: Human-readable status string, or None if data is unavailable.
         """
         data = self._package_data
         if data is None:
@@ -184,14 +186,13 @@ class Ship24PackageSensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
     @property
     def icon(self) -> str:
         """
-        Return an icon based on the current delivery status.
+        Return a status-specific MDI icon.
 
         :return: MDI icon string.
         """
         data = self._package_data
         if data is None:
             return "mdi:package-variant-closed"
-        status_code = data.get("status_code", "")
         return {
             "delivered": "mdi:package-variant-closed-check",
             "in_transit": "mdi:truck-fast",
@@ -199,12 +200,12 @@ class Ship24PackageSensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
             "failed_attempt": "mdi:package-variant-remove",
             "exception": "mdi:alert-circle",
             "available_for_pickup": "mdi:store",
-        }.get(status_code, "mdi:package-variant-closed")
+        }.get(data.get("status_code", ""), "mdi:package-variant-closed")
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """
-        Return additional state attributes for the package sensor.
+        Return additional state attributes for this package sensor.
 
         :return: Dict of attribute name to value.
         """
@@ -228,19 +229,13 @@ class Ship24PackageSensor(CoordinatorEntity[Ship24Coordinator], SensorEntity):
     @property
     def device_info(self) -> dict[str, Any]:
         """
-        Return device info so each package sensor appears as its own device.
+        Expose each package as its own HA device named by its friendly name or tracking number.
 
         :return: Dict with device identifiers and metadata.
         """
-        data = self._package_data
-        name = self._tracking_number
-        if data:
-            alias = data.get("friendly_name", "")
-            if alias:
-                name = alias
         return {
             "identifiers": {(DOMAIN, self._tracking_number)},
-            "name": f"Package: {name}",
+            "name": self._display_name,
             "manufacturer": "Ship24",
             "model": "Package Tracker",
         }

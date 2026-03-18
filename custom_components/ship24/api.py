@@ -1,3 +1,5 @@
+"""Ship24 API client for the Ship24 Package Tracker integration."""
+
 from __future__ import annotations
 
 import logging
@@ -45,22 +47,21 @@ class Ship24Api:
 
     async def validate_api_key(self) -> bool:
         """
-        Validate the API key by making a lightweight API call.
+        Validate the API key using the couriers endpoint.
+
+        Ship24 returns 403 (not 401) for invalid/missing API keys.
 
         :return: True if the API key is valid, raises Ship24AuthError otherwise.
         """
-        url = f"{API_BASE_URL}/trackers/search/results"
-        payload = {"trackingNumbers": ["TEST_VALIDATION_000"]}
+        url = f"{API_BASE_URL}/couriers"
         try:
-            async with self._session.post(
+            async with self._session.get(
                 url,
                 headers=self._headers,
-                json=payload,
                 timeout=aiohttp.ClientTimeout(total=API_TIMEOUT),
             ) as response:
-                if response.status == 401:
-                    raise Ship24AuthError("Invalid API key")
-                
+                if response.status == 403:
+                    raise Ship24AuthError("Invalid or unauthorized API key")
                 return True
         except aiohttp.ClientError as err:
             raise Ship24ApiError(f"Connection error during validation: {err}") from err
@@ -71,36 +72,51 @@ class Ship24Api:
         """
         Fetch tracking results for the given list of tracking numbers.
 
+        Uses POST /public/v1/trackers/track per tracking number, which creates
+        the tracker subscription if it does not exist (idempotent) and returns
+        the current tracking result in a single call.
+
         param tracking_numbers: List of tracking number strings to query.
 
-        :return: List of tracking result dicts from the Ship24 API.
+        :return: List of tracking result dicts, one per successfully fetched number.
         """
         if not tracking_numbers:
             return []
 
-        url = f"{API_BASE_URL}/trackers/search/results"
-        payload = {"trackingNumbers": tracking_numbers}
+        results: list[dict[str, Any]] = []
+        url = f"{API_BASE_URL}/trackers/track"
 
-        try:
-            async with self._session.post(
-                url,
-                headers=self._headers,
-                json=payload,
-                timeout=aiohttp.ClientTimeout(total=API_TIMEOUT),
-            ) as response:
-                if response.status == 401:
-                    raise Ship24AuthError("Invalid API key")
-                if response.status not in (200, 207):
-                    text = await response.text()
-                    raise Ship24ApiError(
-                        f"API returned status {response.status}: {text}"
-                    )
-                data = await response.json()
-        except aiohttp.ClientError as err:
-            raise Ship24ApiError(f"Connection error: {err}") from err
+        for tracking_number in tracking_numbers:
+            payload = {"trackingNumber": tracking_number}
+            try:
+                async with self._session.post(
+                    url,
+                    headers=self._headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=API_TIMEOUT),
+                ) as response:
+                    if response.status == 403:
+                        raise Ship24AuthError("Invalid or unauthorized API key")
+                    if response.status not in (200, 201):
+                        text = await response.text()
+                        _LOGGER.warning(
+                            "Ship24 returned status %d for %s: %s",
+                            response.status,
+                            tracking_number,
+                            text,
+                        )
+                        continue
+                    data = await response.json()
+                    tracking = data.get("data", {})
+                    if tracking:
+                        results.append(tracking)
+            except Ship24AuthError:
+                raise
+            except aiohttp.ClientError as err:
+                _LOGGER.warning(
+                    "Connection error fetching %s: %s", tracking_number, err
+                )
+                continue
 
-        trackings: list[dict[str, Any]] = (
-            data.get("data", {}).get("trackings", [])
-        )
-        _LOGGER.debug("Received %d tracking result(s) from Ship24", len(trackings))
-        return trackings
+        _LOGGER.debug("Fetched %d tracking result(s) from Ship24", len(results))
+        return results
